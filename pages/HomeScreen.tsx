@@ -670,12 +670,12 @@ const HomeScreen = ({navigation}) => {
         >
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
-                <Text></Text>
+                {/* <Text></Text> */}
                 <Text style={styles.modalText}>
-                Please answer the following questions:
+                  Please answer the following questions:
                 </Text>
-                <Text></Text>
-                <Text></Text>
+                {/* <Text></Text>
+                <Text></Text> */}
                 <Text style={styles.modalText}>Which wheelchair you will be using?</Text>
                 <View style={styles.action}>
                     <DropDownPicker placeholder="Select Wheelchair"
@@ -703,7 +703,7 @@ const HomeScreen = ({navigation}) => {
                       <Text style={styles.addWcButtonText}>+ Add new wheelchair</Text>
                     </TouchableOpacity>
                     
-                    <Text></Text>
+                    {/* <Text></Text>
                     <Text style={styles.modalText}>1. How Frequently will you be taking this trip?</Text>
                     <RadioButton.Group >
                       {[0, 1, 2].map(pos => (
@@ -777,7 +777,7 @@ const HomeScreen = ({navigation}) => {
                           <Text style={styles.radioText}>{`${uegencyQues[pos]}`}</Text>
                         </TouchableOpacity>
                       ))}
-                    </RadioButton.Group >
+                    </RadioButton.Group > */}
 
                     <Text></Text>
                     {/* <Button
@@ -824,7 +824,8 @@ const HomeScreen = ({navigation}) => {
                     setIsRunning(!isRunning)
                     stopLocationUpdates();
                     onStopBackgroundTimer();
-                    setModalVisible(!modalVisible)
+                    phonePosSelect(selectedPosEq1, selectedPosEq2);
+                    setModalVisible(false);
                   }
                 }else{
                   if(isRunning){
@@ -835,7 +836,8 @@ const HomeScreen = ({navigation}) => {
                     setIsRunning(!isRunning)
                     //stopLocationUpdates()
                     toggleBackground(isRunning);
-                    setModalVisible(!modalVisible)
+                    phonePosSelect(selectedPosEq1, selectedPosEq2);
+                    setModalVisible(false);
                   }
                 }
               }}
@@ -858,7 +860,7 @@ const HomeScreen = ({navigation}) => {
           >
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
-              <Text style={styles.modalTextTop}>
+              {/* <Text style={styles.modalTextTop}>
                 Please answer the following questions
               </Text>
               <Text style={styles.modalText}>How difficult was this road?</Text>
@@ -900,7 +902,7 @@ const HomeScreen = ({navigation}) => {
                     <Text style={styles.modalText}>{`${phonePosQues[pos]}`}</Text>
                   </TouchableOpacity>
                 ))}
-              </RadioButton.Group>
+              </RadioButton.Group> */}
               
               <TouchableOpacity style={styles.modalSubmitButton}
                   accessible={true}
