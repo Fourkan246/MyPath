@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {ScrollView, Alert, BackHandler, Modal, Button, Linking, PermissionsAndroid, Platform, StyleSheet, Switch, Text, ToastAndroid, TouchableOpacity, Pressable, View, SafeAreaView} from 'react-native';
+import {ScrollView, Alert, BackHandler, Modal, Button, Linking, PermissionsAndroid, Platform, StyleSheet, Switch, Text, ToastAndroid, TouchableOpacity, Pressable, View, SafeAreaView, TextInput} from 'react-native';
 //import { ScrollView } from 'react-native-virtualized-view'
 import Geolocation, { GeoPosition } from 'react-native-geolocation-service';
 import VIForegroundService from '@voximplant/react-native-foreground-service';
@@ -19,6 +19,9 @@ import { getDistance } from 'geolib';
 import { RadioButton } from 'react-native-paper';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Realm from 'realm';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import { useSharedValue, useAnimatedReaction, runOnJS } from 'react-native-reanimated';
+import { Slider } from 'react-native-awesome-slider';
 
 const TaskSchema = {
  name: 'senData',
@@ -51,6 +54,18 @@ const HomeScreen = ({navigation}) => {
   const [foregroundService, setForegroundService] = useState(true);
   const [useLocationManager, setUseLocationManager] = useState(false);
   const [location, setLocation] = useState<GeoPosition | null>(null);
+  const [fromLocation, setFromLocation] = useState(null);
+  const [toLocation, setToLocation] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [focus, setFocus] = useState('user');
+  const [overlay, setOverlay] = useState('none');
+  const [inclineThreshold, setInclineThreshold] = useState(1);
+  const [turnByTurnToggled, setTurnByTurnToggled] = useState(false);
+  const [instructions, setInstructions] = useState([]);
+
+  const sliderProgress = useSharedValue(1);
+  const sliderMin = useSharedValue(0);
+  const sliderMax = useSharedValue(6);
 
   const watchId = useRef<number | null>(null);
 
@@ -120,6 +135,17 @@ const HomeScreen = ({navigation}) => {
     }, MINUTE_MS);
     return () => clearInterval(interval);
   }, [])
+
+  useAnimatedReaction(
+    () => {
+      return sliderProgress.value;
+    },
+    (currentValue, previousValue) => {
+      if (currentValue !== previousValue) {
+        runOnJS(setInclineThreshold)(currentValue);
+      }
+    }
+  );
 
   // useEffect(() => {
   //   const backAction = () => {
@@ -648,11 +674,66 @@ const HomeScreen = ({navigation}) => {
   const [selectedPosEq1, setSelectedPosEq1] = useState("1"); 
   const [selectedPosEq2, setSelectedPosEq2] = useState("1"); 
 
+  const handleInstructions = (instructions) => {
+    setInstructions(instructions);
+  }
+
   return (
     <SafeAreaView style={styles.mainContainer}>
       <View style={{flex : 1.5}}>
-        <MapView coords={location?.coords || null} />
+        <MapView coords={location?.coords || null} 
+                fromCoords={fromLocation} 
+                toCoords={toLocation} 
+                focus={focus} 
+                isSearching={isSearching} 
+                overlay={overlay}
+                inclineThreshold={inclineThreshold}
+                sendInstructions={handleInstructions}
+        />
       </View>
+      <View style={{flexDirection: 'row'}}>
+        <View style={{height: 130, flex: 1, paddingRight: 5}}>
+          {/* <PlaceAutoComplete /> */}
+          <GooglePlacesAutocomplete
+            placeholder="From"
+            fetchDetails={true}
+            onPress={(data, details = null) => {
+              // 'details' is provided when fetchDetails = true
+              setFocus('source')
+              setIsSearching(false);
+              setFromLocation({
+                latitude: details?.geometry.location.lat,
+                longitude: details?.geometry.location.lng
+              });
+            }}
+            query={{
+              key: 'AIzaSyAR5bol3B_2w177qbx1TNSN8WSrdEIjECE',
+              language: 'en',
+            }}
+          />
+        </View>
+        <View style={{height: 130, flex: 1, paddingLeft: 5}}>
+          {/* <PlaceAutoComplete /> */}
+          <GooglePlacesAutocomplete
+            placeholder="To"
+            fetchDetails={true}
+            onPress={(data, details = null) => {
+              // 'details' is provided when fetchDetails = true
+              setFocus('destination')
+              setIsSearching(false);
+              setToLocation({
+                latitude: details?.geometry.location.lat,
+                longitude: details?.geometry.location.lng
+              });
+            }}
+            query={{
+              key: 'AIzaSyAR5bol3B_2w177qbx1TNSN8WSrdEIjECE',
+              language: 'en',
+            }}
+          />
+        </View>
+      </View>
+
 
       <Modal
         animationType="slide"
@@ -670,12 +751,12 @@ const HomeScreen = ({navigation}) => {
         >
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
-                {/* <Text></Text> */}
+                <Text></Text>
                 <Text style={styles.modalText}>
-                  Please answer the following questions:
+                Please answer the following questions:
                 </Text>
-                {/* <Text></Text>
-                <Text></Text> */}
+                <Text></Text>
+                <Text></Text>
                 <Text style={styles.modalText}>Which wheelchair you will be using?</Text>
                 <View style={styles.action}>
                     <DropDownPicker placeholder="Select Wheelchair"
@@ -703,7 +784,7 @@ const HomeScreen = ({navigation}) => {
                       <Text style={styles.addWcButtonText}>+ Add new wheelchair</Text>
                     </TouchableOpacity>
                     
-                    {/* <Text></Text>
+                    <Text></Text>
                     <Text style={styles.modalText}>1. How Frequently will you be taking this trip?</Text>
                     <RadioButton.Group >
                       {[0, 1, 2].map(pos => (
@@ -777,7 +858,7 @@ const HomeScreen = ({navigation}) => {
                           <Text style={styles.radioText}>{`${uegencyQues[pos]}`}</Text>
                         </TouchableOpacity>
                       ))}
-                    </RadioButton.Group > */}
+                    </RadioButton.Group >
 
                     <Text></Text>
                     {/* <Button
@@ -809,8 +890,25 @@ const HomeScreen = ({navigation}) => {
         style={[styles.container, {flex : 1}]}
         contentContainerStyle={styles.contentContainer}>
 
-        <View style={styles.buttonContainer}>
+        {/* <View style={styles.buttonContainer}> */}
           <View style={styles.buttons}>
+            <CustomBtn
+              style={{marginHorizontal: 6}}
+              title={'Find Path'}
+              onPress={() => {
+                setIsSearching(true);
+                setOverlay('none')
+              }}
+            />
+            <CustomBtn
+              style={{marginHorizontal: 6}}
+              title={'Navigation'}
+              onPress={() => {
+                setTurnByTurnToggled(true);
+              }}
+            />
+          </View>
+          {/* <View style={styles.buttons}> */}
             <CustomBtn
               title={isRunning ? '"Start" Data Collection' : '"Stop" Data Collection'}
               onPress={() => {
@@ -824,8 +922,7 @@ const HomeScreen = ({navigation}) => {
                     setIsRunning(!isRunning)
                     stopLocationUpdates();
                     onStopBackgroundTimer();
-                    phonePosSelect(selectedPosEq1, selectedPosEq2);
-                    setModalVisible(false);
+                    setModalVisible(!modalVisible)
                   }
                 }else{
                   if(isRunning){
@@ -836,14 +933,84 @@ const HomeScreen = ({navigation}) => {
                     setIsRunning(!isRunning)
                     //stopLocationUpdates()
                     toggleBackground(isRunning);
-                    phonePosSelect(selectedPosEq1, selectedPosEq2);
-                    setModalVisible(false);
+                    setModalVisible(!modalVisible)
                   }
                 }
               }}
             />
+          {/* </View> */}
+          <View style={styles.buttons}>
+          <CustomBtn
+            style={{marginHorizontal: 6}}
+            title={'Surface Layer'}
+            onPress={() => {
+              setOverlay(overlay !== 'surface' ? 'surface' : 'none');
+            }}
+          />
+          <CustomBtn
+            style={{marginHorizontal: 6}}
+            title={'Incline Layer'}
+            onPress={() => {
+              setOverlay(overlay !== 'incline' ? 'incline' : 'none');
+            }}
+          />
           </View>
-        </View>
+          {/* <TextInput 
+            style={{borderColor: "black", borderWidth: 1, }}
+            value={inclineThreshold}
+            onChangeText = {(text)=> {
+              text.replace(/[^0-9]/g, '')
+              setInclineThreshold(parseFloat(text))
+            }}
+          />  */}
+          <Slider
+            style={styles.slider}
+            progress={sliderProgress}
+            minimumValue={sliderMin}
+            maximumValue={sliderMax}
+          />
+        {/* </View> */}
+
+        <Modal
+          animationType='slide'
+          transparent={true}
+          visible={turnByTurnToggled}
+          onRequestClose={() => {
+            
+          }}>
+            <ScrollView 
+            style={[styles.container, {flex : 1}]}
+            contentContainerStyle={styles.modalContainer}
+            >
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <Text style={styles.modalTextTop}>
+                  Navigation
+                </Text>
+                {
+                  instructions.map((instruction, index) => {
+                      return (
+                        <Text>
+                          {index + 1}. {instruction}
+                        </Text>
+                      )
+                  })
+                }
+                <TouchableOpacity 
+                  style={styles.modalSubmitButton}
+                  accessible={true}
+                  accessibilityRole="button"
+                  onPress={() => {
+                    setTurnByTurnToggled(!turnByTurnToggled);
+                  }}
+                >
+                <Text style={styles.addWcButtonText}>Close</Text>
+              </TouchableOpacity>
+              </View>
+            </View>
+          </ScrollView>
+            
+        </Modal>
 
 
         <Modal
@@ -860,7 +1027,7 @@ const HomeScreen = ({navigation}) => {
           >
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
-              {/* <Text style={styles.modalTextTop}>
+              <Text style={styles.modalTextTop}>
                 Please answer the following questions
               </Text>
               <Text style={styles.modalText}>How difficult was this road?</Text>
@@ -902,7 +1069,7 @@ const HomeScreen = ({navigation}) => {
                     <Text style={styles.modalText}>{`${phonePosQues[pos]}`}</Text>
                   </TouchableOpacity>
                 ))}
-              </RadioButton.Group> */}
+              </RadioButton.Group>
               
               <TouchableOpacity style={styles.modalSubmitButton}
                   accessible={true}
@@ -983,7 +1150,7 @@ const styles = StyleSheet.create({
   },
   buttons: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 12,
     width: '100%',
@@ -1030,11 +1197,12 @@ const styles = StyleSheet.create({
   },
   modalSubmitButton: {                 // Set the desired width for the gap
     marginTop: 5, // Adjust the marginTop value to add the desired gap
-    marginBottom: 10,
+    // marginBottom: 10,
     backgroundColor: '#2DAFD2',
     padding: 8,
     borderRadius: 5,
     width: '100%',
+    alignSelf: 'center'
   },
   modalText: {
     
@@ -1052,7 +1220,8 @@ const styles = StyleSheet.create({
   modalTextTop: {
     color: 'black',
     fontSize: 15,
-    
+    alignSelf: 'center',
+    marginBottom: 12
   },
   buttonText: {
     textTransform: 'none', // Disable automatic capitalization
@@ -1074,7 +1243,7 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     padding: 0,
     justifyContent: 'flex-start', // Align content to the top
-    alignItems: 'flex-start',
+    alignItems: 'center',
     
     paddingHorizontal: 0,        // Add horizontal padding for a gap between items
     paddingTop: 0,
@@ -1097,6 +1266,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 5,
   },
+  slider: {
+    width: 200,
+    marginTop: 20
+  }
 
   // containert: {
   //   flex: 1,  // Make the container take up all available space

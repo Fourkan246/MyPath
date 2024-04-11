@@ -28,10 +28,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useRegisterUserMutation} from '../services/userAuthApi';
 import Toast from 'react-native-toast-message';
 
-
-
-
-
 const SignInScreen = ({navigation}) => {
 
     useEffect(() => {

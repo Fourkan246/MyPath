@@ -1,19 +1,68 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 import { GeoCoordinates } from 'react-native-geolocation-service';
-import RNMapView, { Circle, Marker } from 'react-native-maps';
+import RNMapView, { Circle, Marker, Polyline, Geojson } from 'react-native-maps';
+import SurfaceLayer from './SurfaceLayer';
+import InclineLayer from './InclineLayer';
+import SurfacedPath from './SurfacedPath';
+import { fetchInstruction } from '../components/TurnByTurn';
 
 import {Provider} from "react-redux";
 import {store} from "../App/store";
 
+import { surfaceData, sideWalk } from '../components/SurfaceFilters';
+
 interface MapViewProps {
   coords: GeoCoordinates | null;
+  fromCoords: any | null;
+  toCoords: any | null;
+  focus: 'user' | 'source' | 'destination' | null;
+  isSearching: boolean;
+  overlay: 'none' | 'surface' | 'incline';
+  inclineThreshold: Number;
 }
 
-const MapView = ({ coords }: MapViewProps) => {
+// const sideWalk = require('../assets/sidewalk.geojson')
+// const sidewalkJSON = JSON.parse(sidewalk);
+
+const MapView = ({ coords, fromCoords, toCoords, focus, isSearching, overlay, inclineThreshold, sendInstructions }: MapViewProps ) => {
   const mapRef = useRef<RNMapView>(null);
+  const [path, setPath] = useState(null);
+  const [instructions, setInstructions] = useState(null);
+
+  function calculatePath() {
+    if (!fromCoords || !toCoords) return;
+
+    let baseURL = 'https://mypathweb.csi.miamioh.edu/webapi/getSingleRoute?';
+      baseURL += `srcLat=${fromCoords.latitude}&`;
+      baseURL += `srcLon=${fromCoords.longitude}&`;
+      baseURL += `destLat=${toCoords.latitude}&`;
+      baseURL += `destLon=${toCoords.longitude}`;
+      fetch(baseURL)
+        .then(response => response.json())
+        .then(data => {
+          let newPath = [fromCoords];
+          let newInstructions = fetchInstruction(data);
+          for (let i = 0; i < data.nodeList.length; i++) {
+            newPath.push({
+              latitude: data.nodeList[i].latitute,
+              longitude: data.nodeList[i].longtitude
+            });
+          }
+          newPath.push(toCoords);
+          setPath(newPath);
+          sendInstructions(newInstructions);          
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+  }
 
   useEffect(() => {
+    if (isSearching) {
+      calculatePath();
+    }
+
     if (!!coords && mapRef.current) {
       mapRef.current.animateCamera({
         center: {
@@ -26,7 +75,33 @@ const MapView = ({ coords }: MapViewProps) => {
         zoom: 16,
       });
     }
-  }, [coords]);
+
+    if (!!fromCoords && focus === 'source' && mapRef.current) {
+      mapRef.current.animateCamera({
+        center: {
+          latitude: fromCoords.latitude,
+          longitude: fromCoords.longitude,
+        },
+        pitch: 0,
+        heading: 0,
+        altitude: 1000,
+        zoom: 16,
+      });
+    }
+
+    if (!!toCoords && focus === 'destination' && mapRef.current) {
+      mapRef.current.animateCamera({
+        center: {
+          latitude: toCoords.latitude,
+          longitude: toCoords.longitude,
+        },
+        pitch: 0,
+        heading: 0,
+        altitude: 1000,
+        zoom: 16,
+      });
+    }
+  }, [coords, fromCoords, toCoords, isSearching]);
 
   return (
   <Provider store={store}>
@@ -47,6 +122,36 @@ const MapView = ({ coords }: MapViewProps) => {
         loadingBackgroundColor="white"
         style={StyleSheet.absoluteFillObject}
         rotateEnabled={false}>
+        
+        {/* Surface Layer */}
+        {overlay === 'surface' && (
+          <SurfaceLayer/>
+        )}
+
+        {/* Incline Layer */}
+        {overlay === 'incline' && (
+          <InclineLayer threshold={inclineThreshold}/>
+        )}
+
+        {/* Source Marker */}
+        {!!fromCoords && (
+          <Marker pinColor='green' coordinate={fromCoords}/>
+        )}
+
+        {/* Destination Marker */}
+        {!!toCoords && (
+          <Marker pinColor='red' coordinate={toCoords}/>
+        )}
+
+        {/* Route */}
+        {isSearching && !!path && (
+          <Polyline
+            coordinates={path}
+            strokeColor="skyblue"
+            strokeWidth={6}
+          />
+          // <SurfacedPath path={path}/>
+        )}
         {!!coords && (
           <>
             <Marker
