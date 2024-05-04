@@ -15,6 +15,7 @@
 		7978BD1828F1CE3D00C30F5A /* dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7978BD1728F1CE3D00C30F5A /* dummy.swift */; };
 		7E9F83DF9CE15DE8F32FE76C /* libPods-MyPath-MyPathTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C14135B23032CF8F9D228FA8 /* libPods-MyPath-MyPathTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		8FD26B932BCAFB3500DCA1C9 /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 8FD26B922BCAFB3400DCA1C9 /* main.jsbundle */; };
 		FFD2023929C2E344000CA16F /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = FFD2023829C2E344000CA16F /* Fonts */; };
 		FFD2023B29C2E357000CA16F /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = FFD2023829C2E344000CA16F /* Fonts */; };
 /* End PBXBuildFile section */
@@ -47,6 +48,7 @@
 		7978BD1628F1CE3C00C30F5A /* MyPath-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MyPath-Bridging-Header.h"; sourceTree = "<group>"; };
 		7978BD1728F1CE3D00C30F5A /* dummy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = dummy.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = MyPath/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		8FD26B922BCAFB3400DCA1C9 /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
 		C14135B23032CF8F9D228FA8 /* libPods-MyPath-MyPathTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MyPath-MyPathTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		FFD2023829C2E344000CA16F /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Fonts; path = "../node_modules/react-native-vector-icons/Fonts"; sourceTree = "<group>"; };
@@ -92,6 +94,7 @@
 		13B07FAE1A68108700A75B9A /* MyPath */ = {
 			isa = PBXGroup;
 			children = (
+				8FD26B922BCAFB3400DCA1C9 /* main.jsbundle */,
 				FFD2023829C2E344000CA16F /* Fonts */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.mm */,
@@ -255,6 +258,7 @@
 				FFD2023929C2E344000CA16F /* Fonts in Resources */,
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				8FD26B932BCAFB3500DCA1C9 /* main.jsbundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -502,7 +506,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 18;
-				DEVELOPMENT_TEAM = W5K4A33JB5;
+				DEVELOPMENT_TEAM = GPPFJTP5UG;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = MyPath/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MyPath;
@@ -518,7 +522,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.routemypath.MyPathApp;
+				PRODUCT_BUNDLE_IDENTIFIER = "Huy-Gia-Identifier.MyPath";
 				PRODUCT_NAME = MyPath;
 				SWIFT_OBJC_BRIDGING_HEADER = "MyPath-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -534,7 +538,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 18;
-				DEVELOPMENT_TEAM = W5K4A33JB5;
+				DEVELOPMENT_TEAM = GPPFJTP5UG;
 				INFOPLIST_FILE = MyPath/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MyPath;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
@@ -549,7 +553,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.routemypath.MyPathApp;
+				PRODUCT_BUNDLE_IDENTIFIER = "Huy-Gia-Identifier.MyPath";
 				PRODUCT_NAME = MyPath;
 				SWIFT_OBJC_BRIDGING_HEADER = "MyPath-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;

@@ -40,21 +40,28 @@ const SurfacedPath = (props) => {
             prevSurfaceType = surfaceType
         }
     }
-    console.log(q);
+    // console.log(q);
     path.push(pathFragment);
     if (prevSurfaceType === undefined) colors.push('black');
     else colors.push(surfaceColor[prevSurfaceType])
-    console.log(colors)
+    // console.log(colors)
 
     return (
         <View>
             {props.path.map((item, index) => {
+                const color = (index === props.currentNode ? "green" : (index === props.path.length - 1 ? "red" : "grey"));
                 return (
-                    
-                    <Marker pinColor="red" coordinate={item}/>
+                    <Marker key={index} 
+                            pinColor={color} 
+                            coordinate={item} 
+                            onPress={() => {
+                                console.log(item);
+                                props.updateCurrentNode(index);
+                            }}
+                    />
                 )
             })}
-            {path.map((item, index) => {
+            {/* {path.map((item, index) => {
                 return (
                     <Polyline
                       coordinates={item}
@@ -62,7 +69,7 @@ const SurfacedPath = (props) => {
                       strokeWidth={6}
                     />
                 )
-            })}
+            })} */}
         </View>
     )
 }

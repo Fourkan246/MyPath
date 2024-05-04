@@ -5,7 +5,7 @@ import RNMapView, { Circle, Marker, Polyline, Geojson } from 'react-native-maps'
 import SurfaceLayer from './SurfaceLayer';
 import InclineLayer from './InclineLayer';
 import SurfacedPath from './SurfacedPath';
-import { fetchInstruction } from '../components/TurnByTurn';
+import { fetchInstructions } from '../components/TurnByTurn';
 
 import {Provider} from "react-redux";
 import {store} from "../App/store";
@@ -25,7 +25,10 @@ interface MapViewProps {
 // const sideWalk = require('../assets/sidewalk.geojson')
 // const sidewalkJSON = JSON.parse(sidewalk);
 
-const MapView = ({ coords, fromCoords, toCoords, focus, isSearching, overlay, inclineThreshold, sendInstructions }: MapViewProps ) => {
+const MapView = ({ coords, fromCoords, 
+                   toCoords, focus, isSearching, 
+                   overlay, inclineThreshold, sendInstructions, 
+                   currentNode, updateCurrentNode}: MapViewProps ) => {
   const mapRef = useRef<RNMapView>(null);
   const [path, setPath] = useState(null);
   const [instructions, setInstructions] = useState(null);
@@ -41,17 +44,20 @@ const MapView = ({ coords, fromCoords, toCoords, focus, isSearching, overlay, in
       fetch(baseURL)
         .then(response => response.json())
         .then(data => {
-          let newPath = [fromCoords];
-          let newInstructions = fetchInstruction(data);
-          for (let i = 0; i < data.nodeList.length; i++) {
-            newPath.push({
-              latitude: data.nodeList[i].latitute,
-              longitude: data.nodeList[i].longtitude
-            });
-          }
-          newPath.push(toCoords);
-          setPath(newPath);
-          sendInstructions(newInstructions);          
+          // let newPath = [fromCoords];
+          let newInstructions = fetchInstructions(data).instructions;
+          let newPath1 = fetchInstructions(data).simplifiedPath;
+          // for (let i = 0; i < data.nodeList.length; i++) {
+          //   newPath.push({
+          //     latitude: data.nodeList[i].latitute,
+          //     longitude: data.nodeList[i].longtitude
+          //   });
+          // }
+          // newPath = newPath.concat(newPath1)
+          // newPath.push(toCoords);
+          setPath(newPath1);
+          sendInstructions(newInstructions);        
+          updateCurrentNode(0);  
         })
         .catch((error) => {
           console.error(error);
@@ -134,23 +140,25 @@ const MapView = ({ coords, fromCoords, toCoords, focus, isSearching, overlay, in
         )}
 
         {/* Source Marker */}
-        {!!fromCoords && (
+        {!!fromCoords && !isSearching && (
           <Marker pinColor='green' coordinate={fromCoords}/>
         )}
 
         {/* Destination Marker */}
-        {!!toCoords && (
+        {!!toCoords && !isSearching && (
           <Marker pinColor='red' coordinate={toCoords}/>
         )}
 
         {/* Route */}
         {isSearching && !!path && (
-          <Polyline
-            coordinates={path}
-            strokeColor="skyblue"
-            strokeWidth={6}
-          />
-          // <SurfacedPath path={path}/>
+          <>
+            <Polyline
+              coordinates={path}
+              strokeColor="skyblue"
+              strokeWidth={6}
+            />
+            <SurfacedPath path={path} currentNode={currentNode} updateCurrentNode={updateCurrentNode}/>
+          </>
         )}
         {!!coords && (
           <>

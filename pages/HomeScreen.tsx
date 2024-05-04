@@ -62,6 +62,7 @@ const HomeScreen = ({navigation}) => {
   const [inclineThreshold, setInclineThreshold] = useState(1);
   const [turnByTurnToggled, setTurnByTurnToggled] = useState(false);
   const [instructions, setInstructions] = useState([]);
+  const [currentNode, setCurrentNode] = useState(0);
 
   const sliderProgress = useSharedValue(1);
   const sliderMin = useSharedValue(0);
@@ -678,9 +679,13 @@ const HomeScreen = ({navigation}) => {
     setInstructions(instructions);
   }
 
+  const updateCurrentNode = (index) => {
+    setCurrentNode(index);
+  }
+
   return (
     <SafeAreaView style={styles.mainContainer}>
-      <View style={{flex : 1.5}}>
+      <View style={{minHeight: "50%", maxHeight: "50%"}}>
         <MapView coords={location?.coords || null} 
                 fromCoords={fromLocation} 
                 toCoords={toLocation} 
@@ -689,9 +694,11 @@ const HomeScreen = ({navigation}) => {
                 overlay={overlay}
                 inclineThreshold={inclineThreshold}
                 sendInstructions={handleInstructions}
+                currentNode={currentNode}
+                updateCurrentNode={updateCurrentNode}
         />
       </View>
-      <View style={{flexDirection: 'row'}}>
+      <View style={{flexDirection: 'row', display: (turnByTurnToggled ? "none" : "flex")}}>
         <View style={{height: 130, flex: 1, paddingRight: 5}}>
           {/* <PlaceAutoComplete /> */}
           <GooglePlacesAutocomplete
@@ -887,7 +894,7 @@ const HomeScreen = ({navigation}) => {
 
 
       <ScrollView
-        style={[styles.container, {flex : 1}]}
+        style={[styles.container, {flex : 1, display : (turnByTurnToggled ? "none" : "flex")}]}
         contentContainerStyle={styles.contentContainer}>
 
         {/* <View style={styles.buttonContainer}> */}
@@ -897,7 +904,8 @@ const HomeScreen = ({navigation}) => {
               title={'Find Path'}
               onPress={() => {
                 setIsSearching(true);
-                setOverlay('none')
+                setOverlay('none');
+                setTurnByTurnToggled(true);
               }}
             />
             <CustomBtn
@@ -971,47 +979,7 @@ const HomeScreen = ({navigation}) => {
           />
         {/* </View> */}
 
-        <Modal
-          animationType='slide'
-          transparent={true}
-          visible={turnByTurnToggled}
-          onRequestClose={() => {
-            
-          }}>
-            <ScrollView 
-            style={[styles.container, {flex : 1}]}
-            contentContainerStyle={styles.modalContainer}
-            >
-            <View style={styles.centeredView}>
-              <View style={styles.modalView}>
-                <Text style={styles.modalTextTop}>
-                  Navigation
-                </Text>
-                {
-                  instructions.map((instruction, index) => {
-                      return (
-                        <Text>
-                          {index + 1}. {instruction}
-                        </Text>
-                      )
-                  })
-                }
-                <TouchableOpacity 
-                  style={styles.modalSubmitButton}
-                  accessible={true}
-                  accessibilityRole="button"
-                  onPress={() => {
-                    setTurnByTurnToggled(!turnByTurnToggled);
-                  }}
-                >
-                <Text style={styles.addWcButtonText}>Close</Text>
-              </TouchableOpacity>
-              </View>
-            </View>
-          </ScrollView>
-            
-        </Modal>
-
+        
 
         <Modal
           animationType="slide"
@@ -1108,6 +1076,37 @@ const HomeScreen = ({navigation}) => {
         </View>  
         )}
       </ScrollView>
+
+      <ScrollView
+          style={[styles.container, {flex : 1, display: (turnByTurnToggled ? "flex" : "none")}]}
+          contentContainerStyle={styles.contentContainer}>
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <Text style={styles.modalTextTop}>
+                  Navigation
+                </Text>
+                {
+                  instructions.map((instruction, index) => {
+                      return (
+                        <Text style={{fontWeight: (index === currentNode ? "bold" : "normal")}}>
+                          {index + 1}. {instruction}
+                        </Text>
+                      )
+                  })
+                }
+                <TouchableOpacity 
+                  style={styles.modalSubmitButton}
+                  accessible={true}
+                  accessibilityRole="button"
+                  onPress={() => {
+                    setTurnByTurnToggled(!turnByTurnToggled);
+                  }}
+                >
+                <Text style={styles.addWcButtonText}>Close</Text>
+              </TouchableOpacity>
+              </View>
+            </View>
+          </ScrollView>
     </SafeAreaView>
   );
 

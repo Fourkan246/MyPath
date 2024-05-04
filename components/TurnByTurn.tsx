@@ -45,10 +45,28 @@ function calculateHeading(startLat, startLong, endLat, endLong) {
 }
 
 function getInstruction(dist, diff) {
-    if (diff < 15 || diff > 345) {
+    // if (diff < 15 || diff > 345) {
+    //     return `Go straight for ${dist.toFixed(2)} meters`;
+    // } else if (15 <= diff && diff < 45) {
+    //     return `Take slight right in ${dist.toFixed(2)} meters`;
+    // } else if (45 <= diff && diff < 135) {
+    //     return `Take right in ${dist.toFixed(2)} meters`;
+    // } else if (135 <= diff && diff < 165) {
+    //     return `Take sharp right in ${dist.toFixed(2)} meters`;
+    // } else if (165 <= diff && diff < 195) {
+    //     return `Take u-turn in ${dist.toFixed(2)} meters`;
+    // } else if (195 <= diff && diff < 225) {
+    //     return `Take sharp left in ${dist.toFixed(2)} meters`;
+    // } else if (225 <= diff && diff < 315) {
+    //     return `Take left in ${dist.toFixed(2)} meters`;
+    // } else if (315 <= diff && diff < 345) {
+    //     return `Take slight left in ${dist.toFixed(2)} meters`;
+    // } else {
+    //     return 'Invalid Data';
+    // }
+
+    if (diff < 45 || diff > 315) {
         return `Go straight for ${dist.toFixed(2)} meters`;
-    } else if (15 <= diff && diff < 45) {
-        return `Take slight right in ${dist.toFixed(2)} meters`;
     } else if (45 <= diff && diff < 135) {
         return `Take right in ${dist.toFixed(2)} meters`;
     } else if (135 <= diff && diff < 165) {
@@ -59,22 +77,20 @@ function getInstruction(dist, diff) {
         return `Take sharp left in ${dist.toFixed(2)} meters`;
     } else if (225 <= diff && diff < 315) {
         return `Take left in ${dist.toFixed(2)} meters`;
-    } else if (315 <= diff && diff < 345) {
-        return `Take slight left in ${dist.toFixed(2)} meters`;
     } else {
         return 'Invalid Data';
     }
 }
 
-
-export function fetchInstruction(route) {
+export function fetchInstructions(route) {
     const count = route.nodeCount;
     // console.log(count);
 
     const nodeList = route.nodeList;
-    const lats = [];
-    const longs = [];
-    const instructions = [];
+    let lats = [];
+    let longs = [];
+    let path = [];
+    let instructions = [];
 
     for (let i = 0; i < nodeList.length; i++) {
         const node = nodeList[i];
@@ -89,7 +105,14 @@ export function fetchInstruction(route) {
         if (i === nodeList.length - 2) {
             const dist = calculateDistance(lats[i], longs[i], lats[i + 1], longs[i + 1]);
             instructions.push(`Your destination is in ${dist.toFixed(2)} meters`);
-            // console.log(`Your destination is in ${dist} meters`);
+            path.push({
+                latitude: lats[i],
+                longitude: longs[i]
+            });
+            path.push({
+                latitude: lats[i + 1],
+                longitude: longs[i + 1]
+            });
             break;
         }
 
@@ -115,10 +138,46 @@ export function fetchInstruction(route) {
             }
         } else {
             instructions.push(getInstruction(dist, diff));
+            path.push({
+                latitude: lats[i],
+                longitude: longs[i]
+            });
         }
     }
 
-    for (let i in instructions) console.log(instructions[i]);
+    // -----------------------------------------------------------
 
-    return instructions;
+    lats = [];
+    longs = [];
+    instructions = [];
+    let originalPath = path;
+
+    for (let i = 0; i < path.length; i++) {
+        lats.push(Number(path[i].latitude));
+        longs.push(Number(path[i].longitude));
+    }
+
+    for (let i = 0; i < path.length; i++) {
+        if (i === path.length - 2) {
+            const dist = calculateDistance(lats[i], longs[i], lats[i + 1], longs[i + 1]);
+            instructions.push(`Your destination is in ${dist.toFixed(2)} meters`);
+            break;
+        }
+
+        const dist = calculateDistance(lats[i], longs[i], lats[i + 1], longs[i + 1]);
+        const h1 = calculateHeading(lats[i], longs[i], lats[i + 1], longs[i + 1]);
+        const h2 = calculateHeading(lats[i + 1], longs[i + 1], lats[i + 2], longs[i + 2]);
+
+        const diff = ((h2 - h1) + 360) % 360;
+        instructions.push(getInstruction(dist, diff));
+    }
+
+    // for (let i in path) console.log(path[i]);
+
+    console.log(originalPath.length + " " + instructions.length)
+
+    return {
+        simplifiedPath: originalPath,
+        instructions: instructions
+    };
 }
